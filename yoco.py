@@ -1,23 +1,23 @@
 """YOCO is a minimalistic YAML-based configuration manager."""
-import os
+import os as _os
 
-from ruamel.yaml import YAML
+from ruamel.yaml import YAML as _YAML
 
-yaml = YAML()
 
+_yaml = _YAML()
 
 def load_config_from_file(path, current_dict=None, parent=None):
     """Load configuration from a file."""
     if current_dict is None:
         current_dict = {}
 
-    full_path = path if parent is None else os.path.join(parent, path)
+    full_path = path if parent is None else _os.path.join(parent, path)
 
     if parent is None:
-        parent = os.path.dirname(path)
+        parent = _os.path.dirname(path)
 
     with open(full_path) as f:
-        config_dict = yaml.load(f)
+        config_dict = _yaml.load(f)
         load_config(config_dict, current_dict, parent)
 
     return current_dict

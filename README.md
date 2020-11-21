@@ -1,2 +1,2 @@
 # YOCO
-YOCO is a minimalistic configuration package for Python based on PyYAML.
+YOCO is a minimalistic YAML-based configuration system for Python.
