@@ -13,8 +13,7 @@ def load_config_from_file(path, current_dict=None, parent=None):
 
     full_path = path if parent is None else _os.path.join(parent, path)
 
-    if parent is None:
-        parent = _os.path.dirname(path)
+    parent = _os.path.dirname(full_path)
 
     with open(full_path) as f:
         config_dict = _yaml.load(f)
