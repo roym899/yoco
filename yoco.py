@@ -52,6 +52,7 @@ def load_config(config_dict, current_dict=None, parent=None):
 
     return current_dict
 
+
 def save_config_to_file(path, config_dict):
     """Save config dictionary as a yaml file."""
     with open(path, "w") as f:

@@ -98,9 +98,8 @@ def test_namespaces():
                 "test_param_1": 2,
                 "test_param_2": "Test string",
                 "test_list": [1, 2, 3],
-             }
+            },
         },
-        "test_param_1": 5
+        "test_param_1": 5,
     }
     assert config_dict == expected_dict
-
