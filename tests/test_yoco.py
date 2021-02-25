@@ -36,3 +36,16 @@ def test_load_config():
         "test_param_3": "Param not in file",
     }
     assert config_dict == expected_dict
+
+
+def test_save_config(tmp_path):
+    """Test saving the config to file.
+
+    Loading a config, saving it to a file and loading it again should yield the same
+    dictionary.
+    """
+    file_path = tmp_path / "test.yaml"
+    original_dict = yoco.load_config_from_file("tests/test_files/config_1.yaml")
+    yoco.save_config_to_file(file_path, original_dict)
+    new_dict = yoco.load_config_from_file(file_path)
+    assert original_dict == new_dict
