@@ -1,0 +1,3 @@
+config:
+  ns_1: namespace_2.yaml
+test_param_1: 5

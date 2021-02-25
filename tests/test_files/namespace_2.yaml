@@ -1,0 +1,3 @@
+config:
+  - ns_nested: config_1.yaml
+  - config_1.yaml

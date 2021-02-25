@@ -77,3 +77,30 @@ def test_nested_config():
         "all": 1,
     }
     assert original_dict == expected_dict
+
+
+def test_namespaces():
+    """Test loading config with namespaces.
+
+    If "config" key contains a dictionary, the key will be the param name under which
+    the config file will be added.
+
+    The config value can also be a list of dictionaries / strings, adding namespaces if
+    it is a dictionary.
+    """
+    config_dict = yoco.load_config_from_file("tests/test_files/namespace_1.yaml")
+    expected_dict = {
+        "ns_1": {
+            "test_param_1": 2,
+            "test_param_2": "Test string",
+            "test_list": [1, 2, 3],
+            "ns_nested": {
+                "test_param_1": 2,
+                "test_param_2": "Test string",
+                "test_list": [1, 2, 3],
+             }
+        },
+        "test_param_1": 5
+    }
+    assert config_dict == expected_dict
+
