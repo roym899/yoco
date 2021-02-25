@@ -51,7 +51,7 @@ def test_save_config(tmp_path):
     assert original_dict == new_dict
 
 
-def test_nested_config(tmp_path):
+def test_nested_config():
     """Test loading with multiple nested config files.
 
     Loads a config file that contains two parent configs.
