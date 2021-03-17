@@ -1,5 +1,6 @@
 """Test functions for YOCO."""
 import yoco
+import os
 
 
 def test_config_from_file():
@@ -99,7 +100,9 @@ def test_namespaces():
                 "test_param_2": "Test string",
                 "test_list": [1, 2, 3],
             },
+            "__path_ns_nested__": os.path.join("tests", "test_files")
         },
         "test_param_1": 5,
+        "__path_ns_1__": os.path.join("tests", "test_files")
     }
     assert config_dict == expected_dict
