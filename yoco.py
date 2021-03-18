@@ -49,9 +49,23 @@ def load_config(config_dict, current_dict=None, parent=None):
                         load_config_from_file(config_path, current_dict, parent, ns)
 
     config_dict.pop("config", None)
-    current_dict.update(config_dict)
+
+    update_recursively(current_dict, config_dict)
 
     return current_dict
+
+
+def update_recursively(current_dict: dict, added_dict: dict):
+    for key, value in added_dict.items():
+        if (
+            key in current_dict
+            and isinstance(current_dict[key], dict)
+            and isinstance(added_dict[key], dict)
+        ):
+            print(current_dict[key])
+            update_recursively(current_dict[key], added_dict[key])
+        else:
+            current_dict[key] = value
 
 
 def save_config_to_file(path, config_dict):

@@ -95,6 +95,7 @@ def test_namespaces():
             "test_param_1": 2,
             "test_param_2": "Test string",
             "test_list": [1, 2, 3],
+            "ns_2_param": 1,
             "ns_nested": {
                 "test_param_1": 2,
                 "test_param_2": "Test string",
