@@ -50,6 +50,9 @@ def load_config(config_dict, current_dict=None, parent=None):
 
     config_dict.pop("config", None)
 
+    if parent is not None:
+        resolve_paths_recursively(config_dict, parent)
+
     update_recursively(current_dict, config_dict)
 
     return current_dict
@@ -62,10 +65,20 @@ def update_recursively(current_dict: dict, added_dict: dict):
             and isinstance(current_dict[key], dict)
             and isinstance(added_dict[key], dict)
         ):
-            print(current_dict[key])
             update_recursively(current_dict[key], added_dict[key])
         else:
             current_dict[key] = value
+
+
+def resolve_paths_recursively(config_dict, parent):
+    for key, value in config_dict.items():
+        if isinstance(config_dict[key], dict):
+            resolve_paths_recursively(config_dict[key], parent)
+        elif (
+            isinstance(value, str)
+            and (value.startswith("./") or value.startswith("../"))
+        ):
+            config_dict[key] = _os.path.join(parent, value)
 
 
 def save_config_to_file(path, config_dict):

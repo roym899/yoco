@@ -76,6 +76,8 @@ def test_nested_config():
         "1_only": 1,
         "2_only": 2,
         "all": 1,
+        "test_path": "tests/test_files/./1.yaml",
+        "rel_path": "tests/test_files/subdir/./subdir.yaml"
     }
     assert original_dict == expected_dict
 
