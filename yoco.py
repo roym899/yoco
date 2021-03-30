@@ -1,7 +1,7 @@
 """YOCO is a minimalistic YAML-based configuration manager."""
 import argparse as _argparse
 import os as _os
-from typing import Any
+from typing import Optional
 
 from ruamel.yaml import YAML as _YAML
 
@@ -88,13 +88,23 @@ def save_config_to_file(path, config_dict):
         _yaml.dump(config_dict, f)
 
 
-def config_from_parser(parser: _argparse.ArgumentParser) -> dict:
+def config_from_parser(
+    parser: _argparse.ArgumentParser, args: Optional[list] = None
+) -> dict:
     """Parse arguments and load configs into a config dictionary.
 
     Strings following -- will be used as key. Dots in that string are used to access
     nested dictionaries. Yaml will be used for type conversion of the value.
+
+    Args:
+        parser:
+            Parser used to parse known and unknown arguments.
+            This function will handle both the known args that have been added before
+            and it tries to parse all other args and integrate them into the config.
+        args:
+            List of arguments to parse. If None, sys.argv[1:] is used.
     """
-    known, other_args = parser.parse_known_args()
+    known, other_args = parser.parse_known_args(args)
     config_dict = {k: v for k, v in vars(known).items() if v is not None}
     config_dict = load_config(config_dict)
     current_key = None
