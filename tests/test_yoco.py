@@ -1,6 +1,9 @@
 """Test functions for YOCO."""
-import yoco
+import argparse
 import os
+import pytest
+
+import yoco
 
 
 def test_config_from_file():
@@ -77,7 +80,7 @@ def test_nested_config():
         "2_only": 2,
         "all": 1,
         "test_path": "tests/test_files/./1.yaml",
-        "rel_path": "tests/test_files/subdir/./subdir.yaml"
+        "rel_path": "tests/test_files/subdir/./subdir.yaml",
     }
     assert original_dict == expected_dict
 
@@ -103,9 +106,49 @@ def test_namespaces():
                 "test_param_2": "Test string",
                 "test_list": [1, 2, 3],
             },
-            "__path_ns_nested__": os.path.join("tests", "test_files")
+            "__path_ns_nested__": os.path.join("tests", "test_files"),
         },
         "test_param_1": 5,
-        "__path_ns_1__": os.path.join("tests", "test_files")
+        "__path_ns_1__": os.path.join("tests", "test_files"),
     }
     assert config_dict == expected_dict
+
+
+def test_config_from_parser() -> None:
+    """Test loading config using argparse."""
+    parser = argparse.ArgumentParser()
+    config_dict = yoco.config_from_parser(parser, args=["--a", "1"])
+    expected_dict = {"a": 1}
+    assert config_dict == expected_dict
+
+    # simple hierarchy
+    parser = argparse.ArgumentParser()
+    config_dict = yoco.config_from_parser(parser, args=["--a.b.c", "1"])
+    expected_dict = {"a": {"b": {"c": 1}}}
+    assert config_dict == expected_dict
+
+    # nested config
+    parser = argparse.ArgumentParser()
+    config_dict = yoco.config_from_parser(
+        parser,
+        args=[
+            "--a.config",
+            "tests/test_files/config_1.yaml",
+            "--a.test_param_1",
+            "Overwrite",
+            "file",
+        ],
+    )
+    expected_dict = {
+        "a": {
+            "test_param_1": "Overwrite file",
+            "test_param_2": "Test string",
+            "test_list": [1, 2, 3],
+        }
+    }
+    assert config_dict == expected_dict
+
+    # trying wrong arg order
+    parser = argparse.ArgumentParser()
+    with pytest.raises(SystemExit):
+        config_dict = yoco.config_from_parser(parser, args=["1", "--a"])  # wrong order
