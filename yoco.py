@@ -1,5 +1,7 @@
 """YOCO is a minimalistic YAML-based configuration manager."""
+import argparse as _argparse
 import os as _os
+from typing import Optional
 
 from ruamel.yaml import YAML as _YAML
 
@@ -74,9 +76,8 @@ def resolve_paths_recursively(config_dict, parent):
     for key, value in config_dict.items():
         if isinstance(config_dict[key], dict):
             resolve_paths_recursively(config_dict[key], parent)
-        elif (
-            isinstance(value, str)
-            and (value.startswith("./") or value.startswith("../"))
+        elif isinstance(value, str) and (
+            value.startswith("./") or value.startswith("../")
         ):
             config_dict[key] = _os.path.join(parent, value)
 
@@ -85,3 +86,65 @@ def save_config_to_file(path, config_dict):
     """Save config dictionary as a yaml file."""
     with open(path, "w") as f:
         _yaml.dump(config_dict, f)
+
+
+def config_from_parser(
+    parser: _argparse.ArgumentParser, args: Optional[list] = None
+) -> dict:
+    """Parse arguments and load configs into a config dictionary.
+
+    Strings following -- will be used as key. Dots in that string are used to access
+    nested dictionaries. Yaml will be used for type conversion of the value.
+
+    Args:
+        parser:
+            Parser used to parse known and unknown arguments.
+            This function will handle both the known args that have been added before
+            and it tries to parse all other args and integrate them into the config.
+        args:
+            List of arguments to parse. If None, sys.argv[1:] is used.
+    """
+    known, other_args = parser.parse_known_args(args)
+    config_dict = {k: v for k, v in vars(known).items() if v is not None}
+    config_dict = load_config(config_dict)
+    current_key = None
+
+    # list of unknown args (all strings) to dictionary
+    # [--arg_1, val_1, --arg_2, val_2_a, val_2_b, ...]
+    # -> {arg_1: val_1, arg_2: "{val_2_a} {val_2_b}, ...}
+    arg_dict = {}
+    for arg in other_args:
+        if arg.startswith("--"):
+            current_key = arg.replace("--", "")
+            arg_dict[current_key] = []
+        else:
+            if current_key is None:
+                parser.error(
+                    message="General args need to start with --name {values}\n"
+                )
+            arg_dict[current_key].append(arg)
+    arg_dict = {key: " ".join(values) for key, values in arg_dict.items()}
+
+    # integrate arg, value pairs into config_dict loaded before, one by one
+    # args can set nested values by using dots
+    # i.e., a.b.c will result in the following hierarchy: {"a": {"b": {"c": value}}}
+    # "config" can still be used to load files
+    for arg, value in arg_dict.items():
+        add_dict = {}
+        current_dict = add_dict
+        hierarchy = arg.split(".")
+        for a in hierarchy[:-1]:
+            current_dict[a] = {}
+            current_dict = current_dict[a]
+        # parse value using yaml (this allows setting lists, dictionaries, etc.)
+        current_dict[hierarchy[-1]] = _yaml.load(value)
+
+        # handle special "config" key by loading the nested dict as root dict
+        # this will practically replace "config" key with the dict from
+        # the specified file
+        load_config(current_dict, current_dict)
+
+        # integrate nested dictionary into config_dict loaded before
+        load_config(add_dict, config_dict)
+
+    return config_dict
