@@ -88,7 +88,7 @@ def save_config_to_file(path, config_dict):
         _yaml.dump(config_dict, f)
 
 
-def config_from_parser(
+def load_config_from_args(
     parser: _argparse.ArgumentParser, args: Optional[list] = None
 ) -> dict:
     """Parse arguments and load configs into a config dictionary.

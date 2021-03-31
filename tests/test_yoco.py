@@ -117,19 +117,19 @@ def test_namespaces():
 def test_config_from_parser() -> None:
     """Test loading config using argparse."""
     parser = argparse.ArgumentParser()
-    config_dict = yoco.config_from_parser(parser, args=["--a", "1"])
+    config_dict = yoco.load_config_from_args(parser, args=["--a", "1"])
     expected_dict = {"a": 1}
     assert config_dict == expected_dict
 
     # simple hierarchy
     parser = argparse.ArgumentParser()
-    config_dict = yoco.config_from_parser(parser, args=["--a.b.c", "1"])
+    config_dict = yoco.load_config_from_args(parser, args=["--a.b.c", "1"])
     expected_dict = {"a": {"b": {"c": 1}}}
     assert config_dict == expected_dict
 
     # nested config
     parser = argparse.ArgumentParser()
-    config_dict = yoco.config_from_parser(
+    config_dict = yoco.load_config_from_args(
         parser,
         args=[
             "--a.config",
@@ -151,4 +151,6 @@ def test_config_from_parser() -> None:
     # trying wrong arg order
     parser = argparse.ArgumentParser()
     with pytest.raises(SystemExit):
-        config_dict = yoco.config_from_parser(parser, args=["1", "--a"])  # wrong order
+        config_dict = yoco.load_config_from_args(
+            parser, args=["1", "--a"]
+        )  # wrong order
