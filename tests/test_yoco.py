@@ -113,6 +113,25 @@ def test_namespaces():
     }
     assert config_dict == expected_dict
 
+    config_dict = yoco.load_config_from_file("tests/test_files/nested_namespace.yaml")
+    expected_dict = {
+        "a": {
+            "b": {
+                "test_param_1": 2,
+                "test_param_2": "Test string",
+                "test_list": [1, 2, 3],
+            },
+            "b2": {
+                "test_param_1": 2,
+                "test_param_2": "Test string",
+                "test_list": [1, 2, 3],
+            },
+            "__path_b__": os.path.join("tests", "test_files"),
+            "__path_b2__": os.path.join("tests", "test_files"),
+        },
+    }
+    assert config_dict == expected_dict
+
 
 def test_config_from_parser() -> None:
     """Test loading config using argparse."""

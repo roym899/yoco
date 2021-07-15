@@ -35,54 +35,21 @@ def load_config(config_dict, current_dict=None, parent=None):
     """Load a config specified as a dictionary."""
     if current_dict is None:
         current_dict = {}
+
     if "config" in config_dict:
-        # config can be string, list of strings, dict, or list of string / dict
-        if isinstance(config_dict["config"], str):
-            load_config_from_file(config_dict["config"], current_dict, parent)
-        elif isinstance(config_dict["config"], dict):
-            for ns, config_path in config_dict["config"].items():
-                load_config_from_file(config_path, current_dict, parent, ns)
-        elif isinstance(config_dict["config"], list):
-            for element in config_dict["config"]:
-                if isinstance(element, str):
-                    load_config_from_file(element, current_dict, parent)
-                elif isinstance(element, dict):
-                    for ns, config_path in element.items():
-                        load_config_from_file(config_path, current_dict, parent, ns)
+        _resolve_config_key(config_dict, current_dict, parent)
 
     config_dict.pop("config", None)
 
     if parent is not None:
-        resolve_paths_recursively(config_dict, parent)
+        _resolve_paths_recursively(config_dict, parent)
 
-    update_recursively(current_dict, config_dict)
+    _update_recursively(current_dict, config_dict)
 
     return current_dict
 
 
-def update_recursively(current_dict: dict, added_dict: dict):
-    for key, value in added_dict.items():
-        if (
-            key in current_dict
-            and isinstance(current_dict[key], dict)
-            and isinstance(added_dict[key], dict)
-        ):
-            update_recursively(current_dict[key], added_dict[key])
-        else:
-            current_dict[key] = value
-
-
-def resolve_paths_recursively(config_dict, parent):
-    for key, value in config_dict.items():
-        if isinstance(config_dict[key], dict):
-            resolve_paths_recursively(config_dict[key], parent)
-        elif isinstance(value, str) and (
-            value.startswith("./") or value.startswith("../")
-        ):
-            config_dict[key] = _os.path.join(parent, value)
-
-
-def save_config_to_file(path, config_dict):
+def save_config_to_file(path: str, config_dict: dict) -> None:
     """Save config dictionary as a yaml file."""
     with open(path, "w") as f:
         _yaml.dump(config_dict, f)
@@ -148,3 +115,57 @@ def load_config_from_args(
         load_config(add_dict, config_dict)
 
     return config_dict
+
+
+def _resolve_config_key(config_dict, current_dict, parent):
+    # config can be string, list of strings, dict, or list of string / dict
+    if isinstance(config_dict["config"], str):
+        load_config_from_file(config_dict["config"], current_dict, parent)
+    elif isinstance(config_dict["config"], dict):
+        _resolve_config_dict(config_dict["config"], current_dict, parent)
+    elif isinstance(config_dict["config"], list):
+        _resolve_config_list(config_dict["config"], current_dict, parent)
+
+
+def _resolve_config_dict(config_dict, current_dict, parent):
+    for ns, element in config_dict.items():
+        if isinstance(element, str):
+            load_config_from_file(element, current_dict, parent, ns)
+        elif isinstance(element, list):
+            _resolve_config_list(element, current_dict, parent)
+        elif isinstance(element, dict):
+            if ns not in current_dict:
+                current_dict[ns] = {}
+            _resolve_config_dict(element, current_dict[ns], parent)
+
+
+def _resolve_config_list(config_list, current_dict, parent):
+    for element in config_list:
+        if isinstance(element, str):
+            load_config_from_file(element, current_dict, parent)
+        elif isinstance(element, list):
+            _resolve_config_list(element, current_dict, parent)
+        elif isinstance(element, dict):
+            _resolve_config_dict(element, current_dict, parent)
+
+
+def _update_recursively(current_dict: dict, added_dict: dict):
+    for key, value in added_dict.items():
+        if (
+            key in current_dict
+            and isinstance(current_dict[key], dict)
+            and isinstance(added_dict[key], dict)
+        ):
+            _update_recursively(current_dict[key], added_dict[key])
+        else:
+            current_dict[key] = value
+
+
+def _resolve_paths_recursively(config_dict: dict, parent):
+    for key, value in config_dict.items():
+        if isinstance(config_dict[key], dict):
+            _resolve_paths_recursively(config_dict[key], parent)
+        elif isinstance(value, str) and (
+            value.startswith("./") or value.startswith("../")
+        ):
+            config_dict[key] = _os.path.join(parent, value)
