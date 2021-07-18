@@ -1,7 +1,8 @@
 """YOCO is a minimalistic YAML-based configuration manager."""
 import argparse as _argparse
+import copy
 import os as _os
-from typing import Optional
+from typing import Dict, Optional
 
 from ruamel.yaml import YAML as _YAML
 
@@ -31,8 +32,11 @@ def load_config_from_file(path, current_dict=None, parent=None, ns=None):
     return current_dict
 
 
-def load_config(config_dict, current_dict=None, parent=None):
-    """Load a config specified as a dictionary."""
+def load_config(config_dict, current_dict=None, parent=None) -> Dict:
+    """Load a config specified as a dictionary.
+
+    If a key is already in current_dict, config_dict will overwrite it.
+    """
     if current_dict is None:
         current_dict = {}
 
@@ -71,8 +75,20 @@ def load_config_from_args(
         args:
             List of arguments to parse. If None, sys.argv[1:] is used.
     """
-    known, other_args = parser.parse_known_args(args)
+    no_default_parser = copy.deepcopy(parser)
+    for a in no_default_parser._actions:
+        if a.dest != "config":
+            a.default = None
+    known, other_args = no_default_parser.parse_known_args(args)
+
+    known_with_default, _ = parser.parse_known_args(args)
+
     config_dict = {k: v for k, v in vars(known).items() if v is not None}
+    with_default_config_dict = {
+        k: v for k, v in vars(known_with_default).items() if v is not None
+    }
+    with_default_config_dict.pop("config", None)
+
     config_dict = load_config(config_dict)
     current_key = None
 
@@ -94,7 +110,7 @@ def load_config_from_args(
 
     # integrate arg, value pairs into config_dict loaded before, one by one
     # args can set nested values by using dots
-    # i.e., a.b.c will result in the following hierarchy: {"a": {"b": {"c": value}}}
+    # i.e., a.b.c will result in the following add_dict: {"a": {"b": {"c": value}}}
     # "config" can still be used to load files
     for arg, value in arg_dict.items():
         add_dict = {}
@@ -106,13 +122,20 @@ def load_config_from_args(
         # parse value using yaml (this allows setting lists, dictionaries, etc.)
         current_dict[hierarchy[-1]] = _yaml.load(value)
 
-        # handle special "config" key by loading the nested dict as root dict
-        # this will practically replace "config" key with the dict from
-        # the specified file
-        load_config(current_dict, current_dict)
+        if hierarchy[-1] == "config":
+            # handle special "config" key by loading the nested dict as root dict
+            # this will practically replace "config" key with the dict from
+            # the specified file
+            load_config(current_dict, current_dict)
+            # config -> lower priority than what is already there
+            config_dict = load_config(config_dict, add_dict)
+        else:
+            # integrate nested dictionary into config_dict loaded before
+            # normal argument -> higher priority than what is arleady there
+            config_dict = load_config(add_dict, config_dict)
 
-        # integrate nested dictionary into config_dict loaded before
-        load_config(add_dict, config_dict)
+    # add default values last (lowest priority) if they weren't specified so far
+    config_dict = load_config(config_dict, with_default_config_dict)
 
     return config_dict
 

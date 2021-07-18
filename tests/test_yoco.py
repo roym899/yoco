@@ -173,3 +173,120 @@ def test_config_from_parser() -> None:
         config_dict = yoco.load_config_from_args(
             parser, args=["1", "--a"]
         )  # wrong order
+
+    # test default args (priority: default < from config < argument)
+    # first case: with default config
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", type=int, default=3)
+    parser.add_argument("--config", default="tests/test_files/test_1.yaml")
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[
+            "--config",
+            "tests/test_files/test_2.yaml",
+        ],
+    )
+    expected_dict = {
+        "test": 2,  # provided config has highest priority
+    }
+    assert config_dict == expected_dict
+
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[
+            "--config",
+            "tests/test_files/test_2.yaml",
+            "--test",
+            "4"
+        ],
+    )
+    expected_dict = {
+        "test": 4,  # argument has highest priority
+    }
+    assert config_dict == expected_dict
+
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[],
+    )
+    expected_dict = {
+        "test": 1,  # default config has highest priority
+    }
+    assert config_dict == expected_dict
+
+    # second case: without default config
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", type=int, default=3)
+    parser.add_argument("--config")
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[
+            "--config",
+            "tests/test_files/test_2.yaml",
+        ],
+    )
+    expected_dict = {
+        "test": 2,  # provided config has highest priority
+    }
+    assert config_dict == expected_dict
+
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[
+            "--config",
+            "tests/test_files/test_2.yaml",
+            "--test",
+            "4",
+        ],
+    )
+    expected_dict = {
+        "test": 4,  # provided argument has highest priority
+    }
+    assert config_dict == expected_dict
+
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[],
+    )
+    expected_dict = {
+        "test": 3,  # default value has highest priority
+    }
+    assert config_dict == expected_dict
+
+    # third case: without config in argument list
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--test", type=int, default=3)
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[
+            "--config",
+            "tests/test_files/test_2.yaml",
+        ],
+    )
+    expected_dict = {
+        "test": 2,  # provided config has highest priority
+    }
+    assert config_dict == expected_dict
+
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[
+            "--config",
+            "tests/test_files/test_2.yaml",
+            "--test",
+            "4",
+        ],
+    )
+    expected_dict = {
+        "test": 4,  # provided argument has highest priority
+    }
+    assert config_dict == expected_dict
+
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=[],
+    )
+    expected_dict = {
+        "test": 3,  # default value has highest priority
+    }
+    assert config_dict == expected_dict
