@@ -2,7 +2,7 @@
 import argparse as _argparse
 import copy
 import os as _os
-from typing import Dict, Optional
+from typing import Optional
 
 from ruamel.yaml import YAML as _YAML
 
@@ -10,8 +10,23 @@ from ruamel.yaml import YAML as _YAML
 _yaml = _YAML()
 
 
-def load_config_from_file(path, current_dict=None, parent=None, ns=None):
-    """Load configuration from a file."""
+def load_config_from_file(
+    path: str, current_dict: Optional[dict] = None, parent: Optional[str] = None
+) -> dict:
+    """Load configuration from a file.
+
+    Args:
+        path: Path of YAML file to load.
+        current_dict:
+            Config dictionary that will be updated.
+            If None, a new dictionary will be created.
+        parent:
+            Parent directory.
+            If not None, path will be assumed to be relative to parent.
+
+    Returns:
+        Updated configuration dictionary.
+    """
     if current_dict is None:
         current_dict = {}
 
@@ -21,23 +36,40 @@ def load_config_from_file(path, current_dict=None, parent=None, ns=None):
 
     with open(full_path) as f:
         config_dict = _yaml.load(f)
-        if ns is not None:
-            if ns not in current_dict:
-                current_dict[ns] = {}
-            load_config(config_dict, current_dict[ns], parent)
-            current_dict[f"__path_{ns}__"] = parent
-        else:
-            load_config(config_dict, current_dict, parent)
+        load_config(config_dict, current_dict, parent)
 
     return current_dict
 
 
-def load_config(config_dict, current_dict=None, parent=None) -> Dict:
-    """Load a config specified as a dictionary.
+def load_config(
+    config_dict: dict,
+    current_dict: Optional[dict] = None,
+    parent: Optional[str] = None,
+    default_dict: Optional[dict] = None,
+) -> dict:
+    """Load a config dictionary.
 
     If a key is already in current_dict, config_dict will overwrite it.
+
+    Note that default_dict and current_dict are not supported together.
+
+    Args:
+        config_dict: Configuration dictionary to be loaded.
+        current_dict: Dictionary to be updated, will be updated in-place.
+        parent: Path of parent config. Used to resolve relative paths.
+        default_dict:
+            Default configuration dictionary. Will be loaded first, but not edited
+            inplace.
+
+    Returns:
+        Loaded / updated config.
     """
-    if current_dict is None:
+    if default_dict is not None and current_dict is not None:
+        raise ValueError("Either default_dict or current_dict has to be None.")
+
+    if default_dict is not None:
+        current_dict = load_config(copy.deepcopy(default_dict))
+    elif current_dict is None:
         current_dict = {}
 
     if "config" in config_dict:
@@ -65,7 +97,7 @@ def load_config_from_args(
     """Parse arguments and load configs into a config dictionary.
 
     Strings following -- will be used as key. Dots in that string are used to access
-    nested dictionaries. Yaml will be used for type conversion of the value.
+    nested dictionaries. YAML will be used for type conversion of the value.
 
     Args:
         parser:
@@ -74,6 +106,9 @@ def load_config_from_args(
             and it tries to parse all other args and integrate them into the config.
         args:
             List of arguments to parse. If None, sys.argv[1:] is used.
+
+    Returns:
+        Loaded configuration dictionary.
     """
     no_default_parser = copy.deepcopy(parser)
     for a in no_default_parser._actions:
@@ -140,29 +175,29 @@ def load_config_from_args(
     return config_dict
 
 
-def _resolve_config_key(config_dict, current_dict, parent):
+def _resolve_config_key(config_dict: dict, current_dict: dict, parent: str) -> None:
     # config can be string, list of strings, dict, or list of string / dict
     if isinstance(config_dict["config"], str):
         load_config_from_file(config_dict["config"], current_dict, parent)
-    elif isinstance(config_dict["config"], dict):
-        _resolve_config_dict(config_dict["config"], current_dict, parent)
     elif isinstance(config_dict["config"], list):
         _resolve_config_list(config_dict["config"], current_dict, parent)
+    elif isinstance(config_dict["config"], dict):
+        _resolve_config_dict(config_dict["config"], current_dict, parent)
 
 
-def _resolve_config_dict(config_dict, current_dict, parent):
+def _resolve_config_dict(config_dict: list, current_dict: dict, parent: str) -> None:
     for ns, element in config_dict.items():
+        if ns not in current_dict:
+            current_dict[ns] = {}
         if isinstance(element, str):
-            load_config_from_file(element, current_dict, parent, ns)
+            load_config_from_file(element, current_dict[ns], parent)
         elif isinstance(element, list):
-            _resolve_config_list(element, current_dict, parent)
+            _resolve_config_list(element, current_dict[ns], parent)
         elif isinstance(element, dict):
-            if ns not in current_dict:
-                current_dict[ns] = {}
             _resolve_config_dict(element, current_dict[ns], parent)
 
 
-def _resolve_config_list(config_list, current_dict, parent):
+def _resolve_config_list(config_list: list, current_dict: dict, parent: str) -> None:
     for element in config_list:
         if isinstance(element, str):
             load_config_from_file(element, current_dict, parent)
@@ -172,7 +207,7 @@ def _resolve_config_list(config_list, current_dict, parent):
             _resolve_config_dict(element, current_dict, parent)
 
 
-def _update_recursively(current_dict: dict, added_dict: dict):
+def _update_recursively(current_dict: dict, added_dict: dict) -> None:
     for key, value in added_dict.items():
         if (
             key in current_dict
@@ -184,7 +219,7 @@ def _update_recursively(current_dict: dict, added_dict: dict):
             current_dict[key] = value
 
 
-def _resolve_paths_recursively(config_dict: dict, parent):
+def _resolve_paths_recursively(config_dict: dict, parent: str) -> None:
     for key, value in config_dict.items():
         if isinstance(config_dict[key], dict):
             _resolve_paths_recursively(config_dict[key], parent)
