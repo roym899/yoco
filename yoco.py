@@ -18,8 +18,8 @@ def load_config_from_file(
     Args:
         path: Path of YAML file to load.
         current_dict:
-            Config dictionary that will be updated.
-            If None, a new dictionary will be created.
+            Current configuration dictionary. Will not be modified.
+            If None, an empty dictionary will be created.
         parent:
             Parent directory.
             If not None, path will be assumed to be relative to parent.
@@ -36,7 +36,7 @@ def load_config_from_file(
 
     with open(full_path) as f:
         config_dict = _yaml.load(f)
-        load_config(config_dict, current_dict, parent)
+        current_dict = load_config(config_dict, current_dict, parent)
 
     return current_dict
 
@@ -45,7 +45,6 @@ def load_config(
     config_dict: dict,
     current_dict: Optional[dict] = None,
     parent: Optional[str] = None,
-    default_dict: Optional[dict] = None,
 ) -> dict:
     """Load a config dictionary.
 
@@ -54,33 +53,29 @@ def load_config(
     Note that default_dict and current_dict are not supported together.
 
     Args:
-        config_dict: Configuration dictionary to be loaded.
-        current_dict: Dictionary to be updated, will be updated in-place.
+        config_dict: Configuration dictionary to be parsed.
+        current_dict:
+            Current configuration dictionary to be updated, will not be changed.
         parent: Path of parent config. Used to resolve relative paths.
-        default_dict:
-            Default configuration dictionary. Will be loaded first, but not edited
-            inplace.
 
     Returns:
-        Loaded / updated config.
+        Loaded / updated configuration dictionary.
     """
-    if default_dict is not None and current_dict is not None:
-        raise ValueError("Either default_dict or current_dict has to be None.")
-
-    if default_dict is not None:
-        current_dict = load_config(copy.deepcopy(default_dict))
-    elif current_dict is None:
+    config_dict = copy.deepcopy(config_dict)
+    if current_dict is None:
         current_dict = {}
+    else:
+        current_dict = copy.deepcopy(current_dict)
 
     if "config" in config_dict:
-        _resolve_config_key(config_dict, current_dict, parent)
+        current_dict = _resolve_config_key(config_dict, current_dict, parent)
 
     config_dict.pop("config", None)
 
     if parent is not None:
         _resolve_paths_recursively(config_dict, parent)
 
-    _update_recursively(current_dict, config_dict)
+    current_dict = _merge_dictionaries(current_dict, config_dict)
 
     return current_dict
 
@@ -110,6 +105,7 @@ def load_config_from_args(
     Returns:
         Loaded configuration dictionary.
     """
+    # parse arguments
     no_default_parser = copy.deepcopy(parser)
     for a in no_default_parser._actions:
         if a.dest != "config":
@@ -142,6 +138,7 @@ def load_config_from_args(
                 )
             arg_dict[current_key].append(arg)
     arg_dict = {key: " ".join(values) for key, values in arg_dict.items()}
+    # done parsing args, stored in arg_dict
 
     # integrate arg, value pairs into config_dict loaded before, one by one
     # args can set nested values by using dots
@@ -157,12 +154,12 @@ def load_config_from_args(
         # parse value using yaml (this allows setting lists, dictionaries, etc.)
         current_dict[hierarchy[-1]] = _yaml.load(value)
 
-        if hierarchy[-1] == "config":
+        if hierarchy[0] == "config":
             # handle special "config" key by loading the nested dict as root dict
             # this will practically replace "config" key with the dict from
             # the specified file
-            load_config(current_dict, current_dict)
-            # config -> lower priority than what is already there
+            add_dict = load_config(add_dict)
+            # config file -> lower priority than what is already there
             config_dict = load_config(config_dict, add_dict)
         else:
             # integrate nested dictionary into config_dict loaded before
@@ -170,19 +167,21 @@ def load_config_from_args(
             config_dict = load_config(add_dict, config_dict)
 
     # add default values last (lowest priority) if they weren't specified so far
-    config_dict = load_config(config_dict, with_default_config_dict)
+    config_dict = _merge_dictionaries(with_default_config_dict, config_dict)
 
     return config_dict
 
 
-def _resolve_config_key(config_dict: dict, current_dict: dict, parent: str) -> None:
+def _resolve_config_key(config_dict: dict, current_dict: dict, parent: str) -> dict:
     # config can be string, list of strings, dict, or list of string / dict
     if isinstance(config_dict["config"], str):
-        load_config_from_file(config_dict["config"], current_dict, parent)
+        return load_config_from_file(config_dict["config"], current_dict, parent)
     elif isinstance(config_dict["config"], list):
-        _resolve_config_list(config_dict["config"], current_dict, parent)
+        return _resolve_config_list(config_dict["config"], current_dict, parent)
     elif isinstance(config_dict["config"], dict):
-        _resolve_config_dict(config_dict["config"], current_dict, parent)
+        return _resolve_config_dict(config_dict["config"], current_dict, parent)
+    else:
+        raise TypeError("Can't parse element of type {type(config_dict['config'])}")
 
 
 def _resolve_config_dict(config_dict: list, current_dict: dict, parent: str) -> None:
@@ -190,33 +189,50 @@ def _resolve_config_dict(config_dict: list, current_dict: dict, parent: str) -> 
         if ns not in current_dict:
             current_dict[ns] = {}
         if isinstance(element, str):
-            load_config_from_file(element, current_dict[ns], parent)
+            current_dict[ns] = load_config_from_file(element, current_dict[ns], parent)
         elif isinstance(element, list):
             _resolve_config_list(element, current_dict[ns], parent)
         elif isinstance(element, dict):
             _resolve_config_dict(element, current_dict[ns], parent)
+    return current_dict
 
 
 def _resolve_config_list(config_list: list, current_dict: dict, parent: str) -> None:
     for element in config_list:
         if isinstance(element, str):
-            load_config_from_file(element, current_dict, parent)
+            current_dict = load_config_from_file(element, current_dict, parent)
         elif isinstance(element, list):
-            _resolve_config_list(element, current_dict, parent)
+            current_dict = _resolve_config_list(element, current_dict, parent)
         elif isinstance(element, dict):
-            _resolve_config_dict(element, current_dict, parent)
+            current_dict = _resolve_config_dict(element, current_dict, parent)
+    return current_dict
 
 
-def _update_recursively(current_dict: dict, added_dict: dict) -> None:
+def _merge_dictionaries(start_dict: dict, added_dict: dict) -> dict:
+    """Create a dictionary by merging one into another.
+
+    Keys present in start_dict will be overwritten by added_dict.
+
+    Args:
+        start_dict: The starting dictionary.
+        added_dict: The dictionary to merge into current_dictionary.
+
+    Returns:
+        The merged dictionary.
+    """
+    merged_dictionary = copy.deepcopy(start_dict)
     for key, value in added_dict.items():
         if (
-            key in current_dict
-            and isinstance(current_dict[key], dict)
+            key in start_dict
+            and isinstance(start_dict[key], dict)
             and isinstance(added_dict[key], dict)
         ):
-            _update_recursively(current_dict[key], added_dict[key])
+            merged_dictionary[key] = _merge_dictionaries(
+                start_dict[key], added_dict[key]
+            )
         else:
-            current_dict[key] = value
+            merged_dictionary[key] = value
+    return merged_dictionary
 
 
 def _resolve_paths_recursively(config_dict: dict, parent: str) -> None:

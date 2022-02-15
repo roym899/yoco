@@ -1,13 +1,12 @@
 """Test functions for YOCO."""
 import argparse
 import copy
-import os
 import pytest
 
 import yoco
 
 
-def test_config_from_file():
+def test_config_from_file() -> None:
     """Test loading a simple config from a file."""
     loaded_dict = yoco.load_config_from_file("tests/test_files/config_1.yaml")
 
@@ -19,8 +18,21 @@ def test_config_from_file():
 
     assert loaded_dict == expected_dict
 
+    # ensure current dictionary is not modified
+    d1 = {"test": 10}
+    d1_copy = copy.deepcopy(d1)
+    loaded_dict = yoco.load_config_from_file("tests/test_files/config_1.yaml", d1)
+    expected_dict = {
+        "test_param_1": 2,
+        "test_param_2": "Test string",
+        "test_list": [1, 2, 3],
+        "test": 10,
+    }
+    assert d1 == d1_copy
+    assert loaded_dict == expected_dict
 
-def test_load_config():
+
+def test_load_config() -> None:
     """Test loading a config through a predefined config dictionary.
 
     YOCO should interpret "config" key as a path and follow such paths recursively.
@@ -51,7 +63,8 @@ def test_load_config():
         "test_param_3": 5,
     }
     expected_default_dict = copy.deepcopy(default_dict)
-    final_config = yoco.load_config(config_dict, default_dict=default_dict)
+    current_dict = yoco.load_config(default_dict)
+    final_config = yoco.load_config(config_dict, current_dict=current_dict)
 
     # Default dictionary should not change
     assert default_dict == expected_default_dict
@@ -63,8 +76,29 @@ def test_load_config():
     }
     assert expected_dict == final_config
 
+    # Ensure config_dict and current_dict are not modified
+    d1 = {
+        "config": "tests/test_files/config_1.yaml",
+        "test_param_1": 3,  # final param should be 3, not 2 from the file
+        "test_param_3": "Param not in file",
+    }
+    d2 = {"test_param_1": 1, "test_param_4": 1}
+    expected_dict = {
+        "test_param_1": 3,
+        "test_param_2": "Test string",
+        "test_list": [1, 2, 3],
+        "test_param_3": "Param not in file",
+        "test_param_4": 1,
+    }
+    d1_copy = copy.deepcopy(d1)
+    d2_copy = copy.deepcopy(d2)
+    d3 = yoco.load_config(d1, d2)
+    assert d1_copy == d1
+    assert d2_copy == d2
+    assert d3 == expected_dict
 
-def test_save_config(tmp_path):
+
+def test_save_config(tmp_path: str) -> None:
     """Test saving the config to file.
 
     Loading a config, saving it to a file and loading it again should yield the same
@@ -77,7 +111,7 @@ def test_save_config(tmp_path):
     assert original_dict == new_dict
 
 
-def test_nested_config():
+def test_nested_config() -> None:
     """Test loading with multiple nested config files.
 
     Loads a config file that contains two parent configs.
@@ -107,7 +141,7 @@ def test_nested_config():
     assert original_dict == expected_dict
 
 
-def test_namespaces():
+def test_namespaces() -> None:
     """Test loading config with namespaces.
 
     If "config" key contains a dictionary, the key will be the param name under which
@@ -169,11 +203,11 @@ def test_config_from_parser() -> None:
     config_dict = yoco.load_config_from_args(
         parser,
         args=[
-            "--a.config",
-            "tests/test_files/config_1.yaml",
             "--a.test_param_1",
             "Overwrite",
             "file",
+            "--config.a",
+            "tests/test_files/config_1.yaml",
         ],
     )
     expected_dict = {
