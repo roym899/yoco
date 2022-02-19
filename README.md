@@ -1,12 +1,12 @@
 # YOCO
 YOCO is a minimalistic YAML-based configuration system for Python.
+Visit the YOCO documentation for detailed usage instructions and API reference.
 
 
-## Usage
+## Installation
 ```bash
-pip install git+ssh://git@github.com/roym899/yoco.git
+pip install yoco
 ```
-
 
 ## Development
 - Use `pip install -e .` to install the package in editable mode
