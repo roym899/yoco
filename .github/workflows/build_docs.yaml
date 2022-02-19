@@ -1,4 +1,7 @@
 # Adapted from https://tech.michaelaltfield.net/2020/07/18/sphinx-rtd-github-pages-1/
+
+name: Docs
+
 on:
   push:
     branches: [ main ]
