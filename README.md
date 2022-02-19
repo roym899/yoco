@@ -1,4 +1,6 @@
 # YOCO
+[![PyTest](https://github.com/roym899/yoco/actions/workflows/pytest.yaml/badge.svg)](https://github.com/roym899/yoco/actions/workflows/pytest.yaml) [![Docs](https://github.com/roym899/yoco/actions/workflows/build_docs.yaml/badge.svg)](https://github.com/roym899/yoco/actions/workflows/build_docs.yaml)
+
 YOCO is a minimalistic YAML-based configuration system for Python.
 Visit the [YOCO documentation](https://roym899.github.io/yoco/) for detailed usage instructions and API reference.
 
