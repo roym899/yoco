@@ -1,6 +1,6 @@
 # YOCO
 YOCO is a minimalistic YAML-based configuration system for Python.
-Visit the YOCO documentation for detailed usage instructions and API reference.
+Visit the [YOCO documentation](https://roym899.github.io/yoco/) for detailed usage instructions and API reference.
 
 
 ## Installation
