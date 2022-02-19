@@ -1,0 +1,22 @@
+site_name: YOCO
+site_url: https://roym899.github.io/yoco/
+repo_url: https://github.com/roym899/yoco
+repo_name: roym899/yoco
+theme: 
+  name: material
+  icon: 
+    repo: fontawesome/brands/github
+
+extra_css:
+  - css/mkdocstrings.css
+
+plugins:
+  - search
+  - mkdocstrings:
+      watch:
+        - yoco.py
+      enable_inventory: true
+
+nav:
+  - Getting started: index.md
+  - API Reference: api_reference.md

@@ -1,4 +1,9 @@
-"""YOCO is a minimalistic YAML-based configuration manager."""
+"""This module contains all YOCO functions to load and save configurations.
+
+YOCO is based on Python dictionaries and YAML files to provide a simple, yet powerful
+way of configuring Python projects. YOCO supports specifying parameters through the
+command line, YAML-files or directly from a Python dictionary.
+"""
 import argparse as _argparse
 import copy
 import os as _os
