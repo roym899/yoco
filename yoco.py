@@ -196,9 +196,9 @@ def _resolve_config_dict(config_dict: list, current_dict: dict, parent: str) -> 
         if isinstance(element, str):
             current_dict[ns] = load_config_from_file(element, current_dict[ns], parent)
         elif isinstance(element, list):
-            _resolve_config_list(element, current_dict[ns], parent)
+            current_dict[ns] = _resolve_config_list(element, current_dict[ns], parent)
         elif isinstance(element, dict):
-            _resolve_config_dict(element, current_dict[ns], parent)
+            current_dict[ns] = _resolve_config_dict(element, current_dict[ns], parent)
     return current_dict
 
 
