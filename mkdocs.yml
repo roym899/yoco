@@ -2,6 +2,7 @@ site_name: YOCO
 site_url: https://roym899.github.io/yoco/
 repo_url: https://github.com/roym899/yoco
 repo_name: roym899/yoco
+edit_uri: edit/main/docs
 theme: 
   name: material
   icon: 
@@ -21,7 +22,6 @@ plugins:
             show_root_heading: true
             show_signature_annotations: true
             show_source: true
-            heading_level: 1
             separate_signature: True
             docstring_section_style: "spacy"
             line_length: 75
