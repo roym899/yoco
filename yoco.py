@@ -8,13 +8,8 @@ import argparse as _argparse
 import copy
 import os as _os
 from typing import List, Optional
-import sys
-import re
 
 from ruamel.yaml import YAML as _YAML
-
-if sys.version_info < (3, 7):
-    copy._deepcopy_dispatch[type(re.compile(""))] = lambda r, _: r
 
 _yaml = _YAML()
 
