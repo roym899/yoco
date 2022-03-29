@@ -232,9 +232,95 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         API Reference
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#yoco" class="md-nav__link">
+    yoco
+  </a>
+  
+    <nav class="md-nav" aria-label="yoco">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#yoco.load_config_from_args" class="md-nav__link">
+    load_config_from_args()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.load_config_from_file" class="md-nav__link">
+    load_config_from_file()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.load_config" class="md-nav__link">
+    load_config()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.resolve_path" class="md-nav__link">
+    resolve_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.save_config_to_file" class="md-nav__link">
+    save_config_to_file()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco._merge_dictionaries" class="md-nav__link">
+    _merge_dictionaries()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco._resolve_paths_recursively" class="md-nav__link">
+    _resolve_paths_recursively()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -260,6 +346,76 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#yoco" class="md-nav__link">
+    yoco
+  </a>
+  
+    <nav class="md-nav" aria-label="yoco">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#yoco.load_config_from_args" class="md-nav__link">
+    load_config_from_args()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.load_config_from_file" class="md-nav__link">
+    load_config_from_file()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.load_config" class="md-nav__link">
+    load_config()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.resolve_path" class="md-nav__link">
+    resolve_path()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco.save_config_to_file" class="md-nav__link">
+    save_config_to_file()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco._merge_dictionaries" class="md-nav__link">
+    _merge_dictionaries()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yoco._resolve_paths_recursively" class="md-nav__link">
+    _resolve_paths_recursively()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -270,7 +426,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-<a href="https://github.com/roym899/yoco/edit/master/docs/api_reference.md" title="Edit this page" class="md-content__button md-icon">
+<a href="https://github.com/roym899/yoco/edit/main/docs/api_reference.md" title="Edit this page" class="md-content__button md-icon">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
 </a>
 
@@ -283,12 +439,12 @@
 
 
 
-<h1 id="yoco" class="doc doc-heading">
+<h2 id="yoco" class="doc doc-heading">
         <code>yoco</code>
 
 
 
-</h1>
+</h2>
 
     <div class="doc doc-contents first">
 
@@ -313,11 +469,11 @@ command line, YAML-files or directly from a Python dictionary.</p>
 
 
 
-<h2 id="yoco.load_config_from_args" class="doc doc-heading">
+<h3 id="yoco.load_config_from_args" class="doc doc-heading">
 load_config_from_args
 
 
-</h2>
+</h3>
 <div class="highlight"><pre><span></span><code><span class="n">load_config_from_args</span><span class="p">(</span>
     <span class="n">parser</span><span class="p">:</span> <span class="n">_argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">,</span>
     <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -602,11 +758,11 @@ See resolve_path for more information.</p>
 
 
 
-<h2 id="yoco.load_config_from_file" class="doc doc-heading">
+<h3 id="yoco.load_config_from_file" class="doc doc-heading">
 load_config_from_file
 
 
-</h2>
+</h3>
 <div class="highlight"><pre><span></span><code><span class="n">load_config_from_file</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">current_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -798,11 +954,11 @@ See resolve_path for more information.</p>
 
 
 
-<h2 id="yoco.load_config" class="doc doc-heading">
+<h3 id="yoco.load_config" class="doc doc-heading">
 load_config
 
 
-</h2>
+</h3>
 <div class="highlight"><pre><span></span><code><span class="n">load_config</span><span class="p">(</span>
     <span class="n">config_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">current_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1005,11 +1161,11 @@ See resolve_path for more information.</p>
 
 
 
-<h2 id="yoco.resolve_path" class="doc doc-heading">
+<h3 id="yoco.resolve_path" class="doc doc-heading">
 resolve_path
 
 
-</h2>
+</h3>
 <div class="highlight"><pre><span></span><code><span class="n">resolve_path</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1246,11 +1402,11 @@ If None, no search paths are assumed.</p>
 
 
 
-<h2 id="yoco.save_config_to_file" class="doc doc-heading">
+<h3 id="yoco.save_config_to_file" class="doc doc-heading">
 save_config_to_file
 
 
-</h2>
+</h3>
 <div class="highlight"><pre><span></span><code><span class="n">save_config_to_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
@@ -1283,11 +1439,11 @@ save_config_to_file
 
 
 
-<h2 id="yoco._merge_dictionaries" class="doc doc-heading">
+<h3 id="yoco._merge_dictionaries" class="doc doc-heading">
 _merge_dictionaries
 
 
-</h2>
+</h3>
 <div class="highlight"><pre><span></span><code><span class="n">_merge_dictionaries</span><span class="p">(</span><span class="n">start_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">added_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span>
 </code></pre></div>
 
@@ -1416,11 +1572,11 @@ _merge_dictionaries
 
 
 
-<h2 id="yoco._resolve_paths_recursively" class="doc doc-heading">
+<h3 id="yoco._resolve_paths_recursively" class="doc doc-heading">
 _resolve_paths_recursively
 
 
-</h2>
+</h3>
 <div class="highlight"><pre><span></span><code><span class="n">_resolve_paths_recursively</span><span class="p">(</span><span class="n">config_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
