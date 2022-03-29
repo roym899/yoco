@@ -196,21 +196,23 @@ def resolve_path(
     """Resolves a path to a full absolute path based on parent and search_paths.
 
     This function considers paths of 5 different cases:
-        /... Absolute path, nothing todo.
-        ~/... Home dir, expand user.
-        ./... Relative to parent (current directory if parent is None).
-        ../... Relative to parent (current directory if parent is None).
-        ...
-            Relative to search paths.
-            If search_paths is None: relative to parent and current working directory
-            is assumed, in that order (i.e., search_paths=[".", ""]).
 
-    Relative search paths such as "." or "./" will be relative to parent (or current
-    directory if parent is None). The search path "" refers to the current directory
-    and is not automatically included.
+    - `/...` Absolute path, nothing todo.
+    - `~/...` Home dir, expand user.
+    - `./...` Relative to parent (current directory if parent is None).
+    - `../...` Relative to parent (current directory if parent is None).
+    - `...`
+        Relative to search paths.
+        If search_paths is None: relative to parent and current working directory
+        is assumed, in that order (i.e., `search_paths=[".", ""]`).
 
-    I.e., if parent is None "." and "" refer to the same path. While if parent is not
-    None, "." means relative to the parent and "" means relative to current directory.
+    Relative search paths such as `"."` or `"./"` will be relative to parent (or current
+    directory if parent is None). The empty search path `""` refers to the current
+    directory and is not automatically included.
+
+    I.e., if parent is None `"."` and `""` refer to the same path. While if parent is
+    not None, `"."` means relative to the parent and `""` means relative to current
+    directory.
 
     Args:
         path: The path to resolve.
