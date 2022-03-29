@@ -58,7 +58,7 @@ def load_config_from_args(
     }
     with_default_config_dict.pop("config", None)
 
-    config_dict = load_config(config_dict)
+    config_dict = load_config(config_dict, search_paths=search_paths)
     current_key = None
 
     # list of unknown args (all strings) to dictionary
@@ -96,9 +96,9 @@ def load_config_from_args(
             # handle special "config" key by loading the nested dict as root dict
             # this will practically replace "config" key with the dict from
             # the specified file
-            add_dict = load_config(add_dict)
+            add_dict = load_config(add_dict, search_paths=search_paths)
             # config file -> lower priority than what is already there
-            config_dict = load_config(config_dict, add_dict)
+            config_dict = load_config(config_dict, add_dict, search_paths=search_paths)
         else:
             # integrate nested dictionary into config_dict loaded before
             # normal argument -> higher priority than what is arleady there
@@ -142,7 +142,7 @@ def load_config_from_file(
 
     with open(full_path) as f:
         config_dict = _yaml.load(f)
-        current_dict = load_config(config_dict, current_dict, parent)
+        current_dict = load_config(config_dict, current_dict, parent, search_paths)
 
     return current_dict
 
@@ -229,8 +229,10 @@ def resolve_path(
         parent = "."
 
     # handle paths starting with / or ~
-    if _os.path.isabs(_os.path.expanduser(path)):
+    if _os.path.isabs(path):
         return _os.path.normpath(path)
+    elif path.startswith("~/"):
+        return _os.path.normpath(_os.path.expanduser(path))
 
     # handle paths starting with . or ..
     parts = path.split(_os.sep)
@@ -239,7 +241,7 @@ def resolve_path(
 
     # handle paths without prefix
     for search_path in search_paths:
-        resolved_path = resolve_path(_os.path.join(search_path, path), parent)
+        resolved_path = resolve_path(_os.path.join(search_path, path), parent, [])
         if _os.path.exists(resolved_path):
             return _os.path.normpath(resolved_path)
 
