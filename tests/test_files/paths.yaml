@@ -1,0 +1,2 @@
+config: [~/home_dir.yaml, file_in_other_folder.yaml]
+file_in_home: ~/123.dat

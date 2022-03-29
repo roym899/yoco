@@ -2,6 +2,7 @@
 import argparse
 import copy
 import pytest
+import os
 
 import yoco
 
@@ -135,8 +136,8 @@ def test_nested_config() -> None:
         "1_only": 1,
         "2_only": 2,
         "all": 1,
-        "test_path": "tests/test_files/./1.yaml",
-        "rel_path": "tests/test_files/subdir/./subdir.yaml",
+        "test_path": "tests/test_files/1.yaml",
+        "rel_path": "tests/test_files/subdir/subdir.yaml",
     }
     assert original_dict == expected_dict
 
@@ -335,5 +336,36 @@ def test_config_from_parser() -> None:
     )
     expected_dict = {
         "test": 3,  # default value has highest priority
+    }
+    assert config_dict == expected_dict
+
+    # search path when loading from args
+    config_dict = yoco.load_config_from_args(
+        parser,
+        args=["--config", "file_in_other_folder.yaml"],
+        search_paths=["tests/other_folder/"],
+    )
+    expected_dict = {
+        "my_var": 2.3,  # from file_in_other_folder
+        "test": 3,  # from default arg
+    }
+    assert config_dict == expected_dict
+
+
+def test_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test resolving of paths with searchpaths and homefolder."""
+    # expand home dir
+    def mock_expanduser(path: str) -> str:
+        return path.replace("~", "tests/home_dir")
+
+    monkeypatch.setattr(os.path, "expanduser", mock_expanduser)
+
+    config_dict = yoco.load_config_from_file(
+        "tests/test_files/paths.yaml", search_paths=[".", "", "tests/other_folder/"]
+    )
+    expected_dict = {
+        "file_in_home": "tests/home_dir/123.dat",  # default value has highest priority
+        "my_number": 1,
+        "my_var": 2.3,
     }
     assert config_dict == expected_dict
