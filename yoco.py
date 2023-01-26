@@ -268,7 +268,7 @@ def _resolve_config_key(
             config_dict["config"], current_dict, parent, search_paths
         )
     else:
-        raise TypeError("Can't parse element of type {type(config_dict['config'])}")
+        raise TypeError(f"Can't parse element of type {type(config_dict['config'])}")
 
 
 def _resolve_config_dict(
