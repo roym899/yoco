@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="yoco",
-    version="1.1.1",
+    version="1.2.0",
     author="Leonard Bruns",
     author_email="roym899@gmail.com",
     description="Minimalistic YAML-based configuration system",
@@ -21,5 +21,5 @@ setuptools.setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research"
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
 )
