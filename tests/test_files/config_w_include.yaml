@@ -1,0 +1,5 @@
+as_value: !include test_1.yaml
+in_list:
+  - !include test_1.yaml
+  - !include test_2.yaml
+!include test_1.yaml: null

@@ -1,8 +1,10 @@
 """Test functions for YOCO."""
+
 import argparse
 import copy
-import pytest
 import os
+
+import pytest
 
 import yoco
 
@@ -110,6 +112,19 @@ def test_save_config(tmp_path: str) -> None:
     yoco.save_config_to_file(file_path, original_dict)
     new_dict = yoco.load_config_from_file(file_path)
     assert original_dict == new_dict
+
+
+def test_include() -> None:
+    """Test loading a config file with various !include tags."""
+    loaded_dict = yoco.load_config_from_file("tests/test_files/config_w_include.yaml")
+
+    expected_dict = {
+        "as_value": {"test": 1},
+        "in_list": [{"test": 1}, {"test": 2}],
+        "test": 1,
+    }
+
+    assert loaded_dict == expected_dict
 
 
 def test_nested_config() -> None:
@@ -354,6 +369,7 @@ def test_config_from_parser() -> None:
 
 def test_paths(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test resolving of paths with searchpaths and homefolder."""
+
     # expand home dir
     def mock_expanduser(path: str) -> str:
         return path.replace("~", "tests/home_dir")
