@@ -349,14 +349,16 @@ def _merge_dictionaries(start_dict: dict, added_dict: dict) -> dict:
 def _resolve_include_tags_recursively(
     config: Any, parent: str, search_paths: Optional[List[str]]
 ) -> Any:
-    """Handle !include tags in config_dict.
+    """Handle !include tags in object.
 
     If a value has an !include tag it will be replaced by the content of the file.
     If a key has an !include tag, the configuration will be merged into the current
     dict.
 
     Args:
-        config_dict: Configuration dictionary will not be modified.
+        config:
+            Configuration for which !include tags are resolved recursively.
+            Will not be modified.
         parent: Parent directory.
         search_paths: Search paths used to resolve config files.
 
@@ -368,16 +370,16 @@ def _resolve_include_tags_recursively(
         included_config = {}  # this is to merge all files included as keys in order
         for key in list(config.keys()):
             if isinstance(key, _YAMLComments.TaggedScalar) and key.tag == "!include":
-                included_config = load_config_from_file(
-                    key.value, included_config, parent=parent, search_paths=search_paths
+                included_config = _resolve_include_tagged_scalar(
+                    key, included_config, parent=parent, search_paths=search_paths
                 )
                 del config[key]
             else:
                 config[key] = _resolve_include_tags_recursively(
                     config[key], parent, search_paths=search_paths
                 )
-        # now merge the key includes with the remaining resolved dict, the later winning
-        # as its more specific
+        # now merge the key includes with the remaining resolved dict, the latter is
+        # winning as its more specific
         return _merge_dictionaries(included_config, config)
     elif isinstance(config, list):
         for i in range(len(config)):
@@ -385,11 +387,36 @@ def _resolve_include_tags_recursively(
                 config[i], parent, search_paths=search_paths
             )
     elif isinstance(config, _YAMLComments.TaggedScalar) and config.tag == "!include":
-        return load_config_from_file(
-            config.value, parent=parent, search_paths=search_paths
+        return _resolve_include_tagged_scalar(
+            config, None, parent=parent, search_paths=search_paths
         )
 
     return config
+
+
+def _resolve_include_tagged_scalar(
+    tagged_value: _YAMLComments.TaggedScalar,
+    current_dict: dict,
+    parent: str,
+    search_paths: Optional[List[str]],
+) -> Any:
+    """Handle a single !include tag.
+
+    The value can be one or multiple files separated by spaces.
+
+    Args:
+        value: Value of the !include tag.
+        parent: Parent directory.
+        search_paths: Search paths used to resolve config files.
+
+    Returns: Merged configuration from the two files.
+    """
+    file_paths = tagged_value.value.split(" ")
+    for file_path in file_paths:
+        merged_config = load_config_from_file(
+            file_path, current_dict, parent=parent, search_paths=search_paths
+        )
+    return merged_config
 
 
 def _resolve_paths_recursively(config_dict: dict, parent: str) -> None:
