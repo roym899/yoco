@@ -2,3 +2,6 @@ as_value: !include test_1.yaml
 in_list:
   - !include test_1.yaml
   - !include test_2.yaml
+  - 5
+!include config_1.yaml: null
+test_param_1: 5  # overwriting the value from config_1.yaml

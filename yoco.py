@@ -8,7 +8,7 @@ command line, YAML-files or directly from a Python dictionary.
 import argparse as _argparse
 import copy
 import os as _os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional
 
 from ruamel.yaml import YAML as _YAML
 from ruamel.yaml import comments as _YAMLComments
@@ -359,15 +359,26 @@ def _resolve_include_tags_recursively(
         config_dict: Configuration dictionary will not be modified.
         parent: Parent directory.
         search_paths: Search paths used to resolve config files.
+
     Returns:
         Clone of the configuration dictionary with resolved !include tags.
     """
     config = copy.deepcopy(config)
     if isinstance(config, dict):
-        for key, value in config.items():
-            config[key] = _resolve_include_tags_recursively(
-                value, parent, search_paths=search_paths
-            )
+        included_config = {}  # this is to merge all files included as keys in order
+        for key in list(config.keys()):
+            if isinstance(key, _YAMLComments.TaggedScalar) and key.tag == "!include":
+                included_config = load_config_from_file(
+                    key.value, included_config, parent=parent, search_paths=search_paths
+                )
+                del config[key]
+            else:
+                config[key] = _resolve_include_tags_recursively(
+                    config[key], parent, search_paths=search_paths
+                )
+        # now merge the key includes with the remaining resolved dict, the later winning
+        # as its more specific
+        return _merge_dictionaries(included_config, config)
     elif isinstance(config, list):
         for i in range(len(config)):
             config[i] = _resolve_include_tags_recursively(
