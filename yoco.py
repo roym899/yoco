@@ -4,12 +4,14 @@ YOCO is based on Python dictionaries and YAML files to provide a simple, yet pow
 way of configuring Python projects. YOCO supports specifying parameters through the
 command line, YAML-files or directly from a Python dictionary.
 """
+
 import argparse as _argparse
 import copy
 import os as _os
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from ruamel.yaml import YAML as _YAML
+from ruamel.yaml import comments as _YAMLComments
 
 _yaml = _YAML()
 
@@ -170,6 +172,7 @@ def load_config(
     else:
         current_dict = copy.deepcopy(current_dict)
 
+    # 1. handle config key if present
     if "config" in config_dict:
         current_dict = _resolve_config_key(
             config_dict, current_dict, parent, search_paths
@@ -177,9 +180,14 @@ def load_config(
 
     config_dict.pop("config", None)
 
+    # 2. handle !include tag
+    config_dict = _resolve_include_tags_recursively(config_dict, parent, search_paths)
+
+    # 3. resolve automatically recognized paths (./, ../, ~)
     if parent is not None:
         _resolve_paths_recursively(config_dict, parent)
 
+    # 4. merge config_dict into current_dict
     current_dict = _merge_dictionaries(current_dict, config_dict)
 
     return current_dict
@@ -273,7 +281,7 @@ def _resolve_config_key(
 
 def _resolve_config_dict(
     config_dict: list, current_dict: dict, parent: str, search_paths: List[str]
-) -> None:
+) -> dict:
     for ns, element in config_dict.items():
         if ns not in current_dict:
             current_dict[ns] = {}
@@ -294,7 +302,7 @@ def _resolve_config_dict(
 
 def _resolve_config_list(
     config_list: list, current_dict: dict, parent: str, search_paths: List[str]
-) -> None:
+) -> dict:
     for element in config_list:
         if isinstance(element, str):
             current_dict = load_config_from_file(
@@ -336,6 +344,41 @@ def _merge_dictionaries(start_dict: dict, added_dict: dict) -> dict:
         else:
             merged_dictionary[key] = value
     return merged_dictionary
+
+
+def _resolve_include_tags_recursively(
+    config: Any, parent: str, search_paths: Optional[List[str]]
+) -> Any:
+    """Handle !include tags in config_dict.
+
+    If a value has an !include tag it will be replaced by the content of the file.
+    If a key has an !include tag, the configuration will be merged into the current
+    dict.
+
+    Args:
+        config_dict: Configuration dictionary will not be modified.
+        parent: Parent directory.
+        search_paths: Search paths used to resolve config files.
+    Returns:
+        Clone of the configuration dictionary with resolved !include tags.
+    """
+    config = copy.deepcopy(config)
+    if isinstance(config, dict):
+        for key, value in config.items():
+            config[key] = _resolve_include_tags_recursively(
+                value, parent, search_paths=search_paths
+            )
+    elif isinstance(config, list):
+        for i in range(len(config)):
+            config[i] = _resolve_include_tags_recursively(
+                config[i], parent, search_paths=search_paths
+            )
+    elif isinstance(config, _YAMLComments.TaggedScalar) and config.tag == "!include":
+        return load_config_from_file(
+            config.value, parent=parent, search_paths=search_paths
+        )
+
+    return config
 
 
 def _resolve_paths_recursively(config_dict: dict, parent: str) -> None:

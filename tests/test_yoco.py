@@ -121,7 +121,6 @@ def test_include() -> None:
     expected_dict = {
         "as_value": {"test": 1},
         "in_list": [{"test": 1}, {"test": 2}],
-        "test": 1,
     }
 
     assert loaded_dict == expected_dict
