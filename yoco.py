@@ -99,7 +99,7 @@ def load_config_from_args(
         else:
             # integrate nested dictionary into config_dict loaded before
             # normal argument -> higher priority than what is arleady there
-            config_dict = load_config(add_dict, config_dict)
+            config_dict = load_config(add_dict, config_dict, search_paths=search_paths)
 
     # add default values last (lowest priority) if they weren't specified so far
     config_dict = _merge_dictionaries(with_default_config_dict, config_dict)
