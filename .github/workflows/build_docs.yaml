@@ -17,7 +17,7 @@ jobs:
     - name: Set up latest Python
       uses: actions/setup-python@v3
     - name: Install prerequisites
-      run:
+      run: |
         pip install .
         pip install -r requirements-dev.txt
     - name: Build docs
