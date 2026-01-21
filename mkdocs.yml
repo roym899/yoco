@@ -14,21 +14,17 @@ extra_css:
 plugins:
   - search
   - mkdocstrings:
-      watch:
-        - yoco.py
       handlers:
         python:
-          rendering:
+          options:
             show_root_heading: true
             show_signature_annotations: true
             show_source: true
-            separate_signature: True
+            separate_signature: true
             docstring_section_style: "spacy"
             line_length: 75
             members_order: source
-          selection:
             docstring_style: "google"
-            members: no
       enable_inventory: true
 
 nav:
