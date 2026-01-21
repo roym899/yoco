@@ -14,3 +14,4 @@ pip install yoco
 - Use `pip install -e .` to install the package in editable mode
 - Use `pip install -r requirements-dev.txt` to install dev tools
 - Use `pytest -rf --cov=yoco --cov-report term-missing tests/` to run tests and check code coverage
+- Use `mkdocs serve --livereload` to test docs locally

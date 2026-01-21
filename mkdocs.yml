@@ -11,6 +11,9 @@ theme:
 extra_css:
   - css/mkdocstrings.css
 
+watch:
+  - yoco.py
+
 plugins:
   - search
   - mkdocstrings:
