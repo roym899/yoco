@@ -13,6 +13,11 @@ from typing import Any, List, Optional
 from ruamel.yaml import YAML as _YAML
 from ruamel.yaml import comments as _YAMLComments
 
+try:
+    from upath import UPath as Path
+except ImportError:
+    from pathlib import Path as Path
+
 _yaml = _YAML()
 
 
@@ -137,7 +142,7 @@ def load_config_from_file(
 
     parent = _os.path.dirname(full_path)
 
-    with open(full_path) as f:
+    with Path(full_path).open(encoding="utf-8") as f:
         config_dict = _yaml.load(f)
         current_dict = load_config(config_dict, current_dict, parent, search_paths)
 
